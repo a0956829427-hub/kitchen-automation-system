@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>廚房備料管理系統</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 { font-size: 1.75rem; font-weight: 700; color: #1a202c; }
+    header p  { margin-top: 6px; color: #718096; font-size: 0.95rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 28px;
+      max-width: 640px;
+      margin: 0 auto 24px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .mode-tabs button {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-weight: 500;
+    }
+    .mode-tabs button.active {
+      background: #2b6cb0;
+      border-color: #2b6cb0;
+      color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color .2s;
+      color: #2d3748;
+    }
+    input:focus { outline: none; border-color: #2b6cb0; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .hint {
+      background: #ebf8ff;
+      border-left: 4px solid #3182ce;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #2c5282;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .hint code {
+      background: #bee3f8;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #2b6cb0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover { background: #2c5282; }
+
+    .output-box {
+      background: #1a202c;
+      color: #68d391;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      min-height: 48px;
+      margin-top: 16px;
+      word-break: break-all;
+      display: none;
+    }
+    .output-box.visible { display: block; }
+
+    .copy-btn {
+      margin-top: 8px;
+      padding: 6px 14px;
+      border: 1.5px solid #2b6cb0;
+      border-radius: 6px;
+      background: transparent;
+      color: #2b6cb0;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: none;
+    }
+    .copy-btn.visible { display: inline-block; }
+    .copy-btn:hover { background: #ebf8ff; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #bee3f8;
+      color: #2b6cb0;
+    }
+
+    .validation-ok   { color: #38a169; font-size: 0.8rem; margin-top: 4px; }
+    .validation-err  { color: #e53e3e; font-size: 0.8rem; margin-top: 4px; }
+
+    footer {
+      text-align: center;
+      color: #a0aec0;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>廚房備料管理系統</h1>
+  <p>Kitchen Automation System &nbsp;|&nbsp; 雙重校驗 · n8n 中台 · LINE 機器人整合</p>
+</header>
+
+<!-- 模式切換 -->
+<div class="card">
+  <h2>操作模式</h2>
+  <div class="mode-tabs">
+    <button class="active" onclick="switchMode('add')">新增備料紀錄</button>
+    <button onclick="switchMode('update')">修改已有紀錄</button>
+  </div>
+
+  <!-- 校驗說明 -->
+  <div class="hint" id="hint-add">
+    系統將執行 <strong>雙重校驗</strong>：<br>
+    1. <strong>群組權限驗證</strong>：僅接受指定 LINE 群組的訊息<br>
+    2. <strong>品項白名單比對</strong>：品項須存在於 Google Sheets 名單<br><br>
+    格式範例：<code>20250411/雞胸肉/5000/4200/小明</code>（無退冰）<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>20250411/豬里肌/3000/500/2100/小華</code>（含退冰）
+  </div>
+  <div class="hint" id="hint-update" style="display:none">
+    修改格式：<code>修改/行號/日期/品項/進貨重量/成品重量/負責人</code><br>
+    行號為試算表中的資料列號（從 1 開始，不含標題列）。
+  </div>
+
+  <!-- 新增表單 -->
+  <form id="form-add" onsubmit="return false">
+    <div class="row-2">
+      <div class="form-group">
+        <label>日期</label>
+        <input type="date" id="add-date" />
+      </div>
+      <div class="form-group">
+        <label>品項名稱</label>
+        <input type="text" id="add-item" placeholder="例：雞胸肉" />
+      </div>
+    </div>
+    <div class="row-3">
+      <div class="form-group">
+        <label>進貨重量 (g)</label>
+        <input type="number" id="add-in" placeholder="5000" min="0" />
+      </div>
+      <div class="form-group">
+        <label>退冰重量 (g) <span class="badge">選填</span></label>
+        <input type="number" id="add-thaw" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>成品重量 (g)</label>
+        <input type="number" id="add-out" placeholder="4200" min="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>負責人</label>
+      <input type="text" id="add-person" placeholder="例：小明" />
+    </div>
+    <button class="btn-primary" onclick="generateAdd()">產生 LINE 訊息格式</button>
+  </form>
+
+  <!-- 修改表單 -->
+  <form id="form-update" style="display:none" onsubmit="return false">
+    <div class="row-2">
+      <div class="form-group">
+        <label>修改行號</label>
+        <input type="number" id="upd-row" placeholder="1" min="1" />
+      </div>
+      <div class="form-group">
+        <label>日期</label>
+        <input type="date" id="upd-date" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>品項名稱</label>
+      <input type="text" id="upd-item" placeholder="例：豬里肌" />
+    </div>
+    <div class="row-3">
+      <div class="form-group">
+        <label>進貨重量 (g)</label>
+        <input type="number" id="upd-in" placeholder="3000" min="0" />
+      </div>
+      <div class="form-group">
+        <label>退冰重量 (g) <span class="badge">選填</span></label>
+        <input type="number" id="upd-thaw" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>成品重量 (g)</label>
+        <input type="number" id="upd-out" placeholder="2100" min="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>負責人</label>
+      <input type="text" id="upd-person" placeholder="例：小華" />
+    </div>
+    <button class="btn-primary" onclick="generateUpdate()">產生 LINE 訊息格式</button>
+  </form>
+
+  <!-- 輸出 -->
+  <div class="output-box" id="output"></div>
+  <button class="copy-btn" id="copy-btn" onclick="copyOutput()">複製訊息</button>
+</div>
+
+<!-- 格式說明 -->
+<div class="card">
+  <h2>格式速查</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+    <thead>
+      <tr style="background:#f7fafc">
+        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">操作</th>
+        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">格式</th>
+        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">段數</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">新增（無退冰）</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">日期/品項/進貨/成品/負責人</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">5 段</td>
+      </tr>
+      <tr>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">新增（含退冰）</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">日期/品項/進貨/退冰/成品/負責人</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">6 段</td>
+      </tr>
+      <tr>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">修改（無退冰）</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">修改/行號/日期/品項/進貨/成品/負責人</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0">7 段</td>
+      </tr>
+      <tr>
+        <td style="padding:10px">修改（含退冰）</td>
+        <td style="padding:10px;font-family:monospace;font-size:0.82rem">修改/行號/日期/品項/進貨/退冰/成品/負責人</td>
+        <td style="padding:10px">8 段</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>Kitchen Automation System &copy; 2025 &nbsp;|&nbsp; Powered by n8n &amp; LINE Bot</footer>
+
+<script>
+  function switchMode(mode) {
+    const isAdd = mode === 'add';
+    document.getElementById('form-add').style.display    = isAdd ? '' : 'none';
+    document.getElementById('form-update').style.display = isAdd ? 'none' : '';
+    document.getElementById('hint-add').style.display    = isAdd ? '' : 'none';
+    document.getElementById('hint-update').style.display = isAdd ? 'none' : '';
+    document.querySelectorAll('.mode-tabs button').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0) === isAdd);
+    });
+    hideOutput();
+  }
+
+  function formatDate(val) {
+    // yyyy-mm-dd → yyyymmdd
+    return val.replace(/-/g, '');
+  }
+
+  function generateAdd() {
+    const date   = document.getElementById('add-date').value;
+    const item   = document.getElementById('add-item').value.trim();
+    const inW    = document.getElementById('add-in').value;
+    const thaw   = document.getElementById('add-thaw').value;
+    const outW   = document.getElementById('add-out').value;
+    const person = document.getElementById('add-person').value.trim();
+
+    if (!date || !item || !inW || !outW || !person) {
+      showOutput('❌ 請填寫所有必填欄位（退冰重量除外）', true);
+      return;
+    }
+
+    const d = formatDate(date);
+    const msg = thaw && thaw !== '0'
+      ? `${d}/${item}/${inW}/${thaw}/${outW}/${person}`
+      : `${d}/${item}/${inW}/${outW}/${person}`;
+
+    showOutput(msg);
+  }
+
+  function generateUpdate() {
+    const row    = document.getElementById('upd-row').value;
+    const date   = document.getElementById('upd-date').value;
+    const item   = document.getElementById('upd-item').value.trim();
+    const inW    = document.getElementById('upd-in').value;
+    const thaw   = document.getElementById('upd-thaw').value;
+    const outW   = document.getElementById('upd-out').value;
+    const person = document.getElementById('upd-person').value.trim();
+
+    if (!row || !date || !item || !inW || !outW || !person) {
+      showOutput('❌ 請填寫所有必填欄位（退冰重量除外）', true);
+      return;
+    }
+
+    const d = formatDate(date);
+    const msg = thaw && thaw !== '0'
+      ? `修改/${row}/${d}/${item}/${inW}/${thaw}/${outW}/${person}`
+      : `修改/${row}/${d}/${item}/${inW}/${outW}/${person}`;
+
+    showOutput(msg);
+  }
+
+  function showOutput(text, isError = false) {
+    const box = document.getElementById('output');
+    const btn = document.getElementById('copy-btn');
+    box.textContent = text;
+    box.style.color = isError ? '#fc8181' : '#68d391';
+    box.classList.add('visible');
+    btn.classList.toggle('visible', !isError);
+  }
+
+  function hideOutput() {
+    document.getElementById('output').classList.remove('visible');
+    document.getElementById('copy-btn').classList.remove('visible');
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('output').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '已複製！';
+      setTimeout(() => { btn.textContent = '複製訊息'; }, 1500);
+    });
+  }
+
+  // 預設日期為今天
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('add-date').value = today;
+  document.getElementById('upd-date').value = today;
+</script>
+</body>
+</html>

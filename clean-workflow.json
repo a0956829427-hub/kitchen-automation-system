@@ -1,0 +1,756 @@
+{
+  "name": "parkoparco",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-webhook",
+        "options": {
+          "responseCode": {
+            "values": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        0
+      ],
+      "id": "3dd21af2-7a15-49a2-b350-0bc22801aa67",
+      "name": "Webhook",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得 LINE Webhook 原始資料\nconst body = $(\"Webhook\").first().json.body;\nif (!body || !body.events || body.events.length === 0) return [];\nconst event = body.events[0];\nconst replyToken = event.replyToken;\nconst source = event.source;\n\n// ==========================================\n// 權限設定：僅限固定群組使用\n// ==========================================\nconst ALLOWED_GROUP_ID = \"YOUR_LINE_GROUP_ID\"; // 例如: Ca1234567890abcdef...\n\n// 檢查是否為指定群組發出的訊息\nif (source.type !== 'group' || source.groupId !== ALLOWED_GROUP_ID) {\n    // 若不符合權限，回傳失敗訊息並中止程式\n    return [{ \n        json: { \n            replyToken, \n            status: \"fail\", \n            message: \"⚠️ 權限錯誤：此機器人僅限指定廚房管理群組使用。\" \n        } \n    }];\n}\n\n// 2. 基礎資料處理\nconst fullText = event.message.text.trim();\nconst lines = fullText.split(/\\r?\\n/).slice(0, 10); // 限制處理 10 筆\nconst masterListData = $(\"Get_Master_List\").all();\nconst validItems = new Set(masterListData.map(row => row.json[\"品項名單\"]?.trim()).filter(Boolean));\n\nlet processedData = [];\nlet errorMsg = \"\";\n\n// 輔助函式：日期格式轉換\nfunction formatDate(dateStr) {\n    if (!dateStr) return \"\";\n    const s = dateStr.trim();\n    if (s.length === 8 && !s.includes('/')) {\n        return `${s.substring(0, 4)}/${s.substring(4, 6)}/${s.substring(6, 8)}`;\n    }\n    return s;\n}\n\n// 3. 逐行掃描校驗\nfor (let i = 0; i < lines.length; i++) {\n    const line = lines[i].trim();\n    if (!line) continue;\n    \n    const parts = line.split('/');\n    let dataObj = { replyToken, status: \"success\" };\n    let item = \"\";\n\n    // --- A. 模式判斷：修改模式 ---\n    if (parts[0] === '修改') {\n        // 最少需 7 段：修改/行號/日期/品項/進貨/成品/負責人\n        if (parts.length < 7) {\n            errorMsg = `❌ 第 ${i + 1} 筆「修改」格式錯誤（需 7 或 8 段）。`;\n            break;\n        }\n\n        const inputRow = parseInt(parts[1]);\n        if (isNaN(inputRow) || inputRow < 1) {\n            errorMsg = `❌ 第 ${i + 1} 筆錯誤：修改行號必須為數字。`;\n            break;\n        }\n        \n        dataObj.action = 'update';\n        dataObj.row_number = inputRow + 1; \n        dataObj.date = formatDate(parts[2]);\n        item = parts[3]?.trim();\n        dataObj.weight_in = parts[4];\n\n        if (parts.length === 7) {\n            // 7 段格式：無退冰重量，自動補 0\n            dataObj.weight_thawed = \"0\"; \n            dataObj.weight_out = parts[5];\n            dataObj.person_in_charge = parts[6];\n        } else {\n            // 8 段格式：包含退冰重量\n            dataObj.weight_thawed = parts[5];\n            dataObj.weight_out = parts[6];\n            dataObj.person_in_charge = parts[7];\n        }\n    } \n    // --- B. 模式判斷：新增模式 ---\n    else {\n        if (parts.length < 5) {\n            errorMsg = `❌ 第 ${i + 1} 筆格式錯誤（段數不足），整批已取消。`;\n            break;\n        }\n        \n        dataObj.action = 'add';\n        dataObj.date = formatDate(parts[0]);\n        item = parts[1]?.trim();\n        dataObj.weight_in = parts[2];\n        \n        if (parts.length === 5) {\n            // 5 段格式：無退冰，自動補 0\n            dataObj.weight_thawed = \"0\";\n            dataObj.weight_out = parts[3];\n            dataObj.person_in_charge = parts[4];\n        } else {\n            // 6 段格式：有退冰\n            dataObj.weight_thawed = parts[3];\n            dataObj.weight_out = parts[4];\n            dataObj.person_in_charge = parts[5];\n        }\n    }\n\n    // --- C. 品項存在性檢查 ---\n    if (!validItems.has(item)) {\n        errorMsg = `❌ 第 ${i + 1} 筆錯誤：品項「${item}」不在名單內。`;\n        break;\n    }\n\n    dataObj.item = item;\n    processedData.push({ json: dataObj });\n}\n\n// 4. 最終結果輸出\nif (errorMsg) {\n    return [{ json: { replyToken, status: \"fail\", message: errorMsg } }];\n}\n\nreturn processedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        0
+      ],
+      "id": "5b0eb8c0-1178-4f1b-b490-941df842e7af",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "list",
+          "cachedResultName": "n8n自我練習",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "總數據",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "負責人": "={{ $json.person_in_charge }}",
+            "日期": "={{ $json.date }}",
+            "品項": "={{ $json.item }}",
+            "進貨重量(g)": "={{ $json.weight_in }}",
+            "退冰實際重量": "={{ $json.weight_thawed }}",
+            "成品重量(g)": "={{ $json.weight_out }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "日期",
+              "displayName": "日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "品項",
+              "displayName": "品項",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "進貨重量(g)",
+              "displayName": "進貨重量(g)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "退冰實際重量",
+              "displayName": "退冰實際重量",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "進貨價格",
+              "displayName": "進貨價格",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "成品重量(g)",
+              "displayName": "成品重量(g)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "損耗重量",
+              "displayName": "損耗重量",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "損耗比",
+              "displayName": "損耗比",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "成品成本/g",
+              "displayName": "成品成本/g",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "負責人",
+              "displayName": "負責人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "1899",
+              "displayName": "1899",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "13",
+              "displayName": "13",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -16
+      ],
+      "id": "dc45224b-7a72-47f1-a87b-43d2b94c7aba",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1957fb19-4bda-48b0-bb65-1e25bf1c0404"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e8e68f64-0dc8-43b3-881c-7988e9d6350f",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        80
+      ],
+      "id": "a10f3088-a517-4061-b200-c6629a443dd7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "list",
+          "cachedResultName": "n8n自我練習",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "總數據",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "日期": "={{ $json.date }}",
+            "品項": "={{ $json.item }}",
+            "進貨重量(g)": "={{ $json.weight_in }}",
+            "退冰實際重量": "={{ $json.weight_thawed }}",
+            "成品重量(g)": "={{ $json.weight_out }}",
+            "負責人": "={{ $json.person_in_charge }}",
+            "row_number": "={{ $json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "日期",
+              "displayName": "日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "品項",
+              "displayName": "品項",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "進貨重量(g)",
+              "displayName": "進貨重量(g)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "退冰實際重量",
+              "displayName": "退冰實際重量",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "進貨價格",
+              "displayName": "進貨價格",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "成品重量(g)",
+              "displayName": "成品重量(g)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "損耗重量",
+              "displayName": "損耗重量",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "損耗比",
+              "displayName": "損耗比",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "成品成本/g",
+              "displayName": "成品成本/g",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "負責人",
+              "displayName": "負責人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        176
+      ],
+      "id": "d0d2d28c-afc3-44d2-8625-dd52a2909593",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_LINE_CHANNEL_ACCESS_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Code in JavaScript').first().json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"✅ 數據處理完成\\n\\n- 狀態：全數入庫成功\\n- 筆數：{{ $('Aggregate').all().length }} 筆\\n- 分頁：「總數據」已更新\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "d326c279-8603-4ef8-a20c-e2b0db516f71",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        880,
+        96
+      ],
+      "id": "f0f1cae9-80cb-4b00-a236-09d3b9dc91ec",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "item"
+            },
+            {
+              "fieldToAggregate": "action"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        96
+      ],
+      "id": "cffda0d3-95cc-49ea-b4d8-a2638ee36f5d",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "list",
+          "cachedResultName": "n8n自我練習",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 882636940,
+          "mode": "list",
+          "cachedResultName": "各類名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_DOCUMENT_ID/edit#gid=882636940"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "7aa92666-de8c-4eaa-b3d5-db7204cb5505",
+      "name": "Get_Master_List",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "fail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0f164c86-1d2a-4ae1-915b-cb98db2d0bbf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "失敗 (fail)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6f9e25e6-ff48-4589-858b-8430c808e7ee",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "成功 (success)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -144
+      ],
+      "id": "8a24230e-785f-45dc-86f2-417aef3ec0d9",
+      "name": "Check Status"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_LINE_CHANNEL_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.message }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        640,
+        -208
+      ],
+      "id": "86b14525-e0fb-4c1a-aa36-4cd518615a77",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get_Master_List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_Master_List": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "YOUR_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
