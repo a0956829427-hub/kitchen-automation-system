@@ -111,9 +111,11 @@ Deployment: GitHub Pages
 本系統不僅實現自動化寫入，更透過數據建模將原始紀錄轉化為具備經營洞察價值的報表。
 
 ### 數據流預覽
-| 原始數據紀錄 (Raw Data) | 損耗彙整報表 (Analytics Report) |
-| :--- | :--- |
-| ![Raw Data](./images/raw_data.png) | ![Analytics](./images/analytics.png) |
+#### 1. 原始數據紀錄 (Raw Data)
+![Raw Data](https://raw.githubusercontent.com/a0956829427-hub/kitchen-automation-system/main/images/raw_data.png)
+
+#### 2. 損耗彙整報表 (Analytics Report)
+![Analytics](https://raw.githubusercontent.com/a0956829427-hub/kitchen-automation-system/main/images/analytics.png)
 | *圖一：LINE 自動寫入之結構化紀錄* | *圖二：透過 QUERY 函數產出之損耗分析* |
 
 ### 1. 總數據 (RawData)
