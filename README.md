@@ -93,3 +93,49 @@
                    │
                    ▼
              [LINE 成功推播]
+
+技術清單列表
+Frontend: HTML5, CSS3, JavaScript (ES6 / LocalStorage)
+
+Backend 中台: n8n Automation Engine
+
+Database & Storage: Google Sheets API, Notion API
+
+Deployment: GitHub Pages
+
+---
+
+## 📦 快速部署指南
+
+若欲在其他環境部署本系統，請遵循以下步驟：
+
+### 1. 匯入 n8n Workflow
+1. 開啟 n8n 實例，選擇 **Workflows → Import**。
+2. 上傳專案中的 `clean-workflow.json`（已去敏化版本）。
+3. 在 n8n 的 **Credentials** 管理介面設定以下憑證：
+   * `LINE_CHANNEL_ACCESS_TOKEN`: 來自 LINE Developers。
+   * `GOOGLE_SHEETS_OAUTH2`: 授權存取指定試算表。
+
+### 2. 環境變數設定
+請於 n8n 全域變數或節點內填入以下必要資訊：
+* `GROUP_ID`: 授權執行指令的指定 LINE 群組。
+* `SPREADSHEET_ID`: 目標 Google Sheets 的唯一代碼。
+
+### 3. Google Sheets 結構要求
+確保試算表包含以下分頁：
+* **總數據**: 欄位包含 `日期`, `品項`, `進貨重量(g)`, `退冰實際重量`, `成品重量(g)`, `負責人`。
+* **各類名單**: 單一欄位 A 供系統讀取作為白名單比對。
+
+---
+
+## 🛡️ 安全注意事項與維護
+
+* **數據脫敏**: 本倉庫不包含任何 API Key、Token 或實體試算表連結。
+* **安全性驗證**: 系統設有 Group ID 鎖定機制，非授權群組傳送之指令將被 Webhook 直接拋棄。
+* **維護建議**: 建議每月定期檢查 `LocalStorage` 佔用量，若品項更新頻繁，可手動執行「資料清理」確保載入速度。
+
+---
+
+## 📄 授權 (License)
+
+本專案採用 **MIT License** 授權。
