@@ -112,10 +112,13 @@ Deployment: GitHub Pages
 
 ### 數據流預覽
 #### 1. 原始數據紀錄 (Raw Data)
+
 ![Raw Data](https://raw.githubusercontent.com/a0956829427-hub/kitchen-automation-system/main/images/raw_data.png)
 
 #### 2. 損耗彙整報表 (Analytics Report)
+
 ![Analytics](https://raw.githubusercontent.com/a0956829427-hub/kitchen-automation-system/main/images/analytics.png)
+
 | *圖一：LINE 自動寫入之結構化紀錄* | *圖二：透過 QUERY 函數產出之損耗分析* |
 
 ### 1. 總數據 (RawData)
