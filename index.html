@@ -1,402 +1,646 @@
+Kitchen prep · HTML
+Copy
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>廚房備料管理系統</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f4f8;
-      color: #2d3748;
-      min-height: 100vh;
-      padding: 24px 16px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    header h1 { font-size: 1.75rem; font-weight: 700; color: #1a202c; }
-    header p  { margin-top: 6px; color: #718096; font-size: 0.95rem; }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.08);
-      padding: 28px;
-      max-width: 640px;
-      margin: 0 auto 24px;
-    }
-    .card h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mode-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .mode-tabs button {
-      flex: 1;
-      padding: 10px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      background: #fff;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all .2s;
-      font-weight: 500;
-    }
-    .mode-tabs button.active {
-      background: #2b6cb0;
-      border-color: #2b6cb0;
-      color: #fff;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #4a5568;
-      margin-bottom: 6px;
-    }
-    input[type="text"], input[type="number"], input[type="date"] {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid #cbd5e0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color .2s;
-      color: #2d3748;
-    }
-    input:focus { outline: none; border-color: #2b6cb0; }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-
-    .hint {
-      background: #ebf8ff;
-      border-left: 4px solid #3182ce;
-      border-radius: 6px;
-      padding: 12px 14px;
-      font-size: 0.82rem;
-      color: #2c5282;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-    .hint code {
-      background: #bee3f8;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      background: #2b6cb0;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .2s;
-      margin-top: 8px;
-    }
-    .btn-primary:hover { background: #2c5282; }
-
-    .output-box {
-      background: #1a202c;
-      color: #68d391;
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      min-height: 48px;
-      margin-top: 16px;
-      word-break: break-all;
-      display: none;
-    }
-    .output-box.visible { display: block; }
-
-    .copy-btn {
-      margin-top: 8px;
-      padding: 6px 14px;
-      border: 1.5px solid #2b6cb0;
-      border-radius: 6px;
-      background: transparent;
-      color: #2b6cb0;
-      font-size: 0.82rem;
-      cursor: pointer;
-      display: none;
-    }
-    .copy-btn.visible { display: inline-block; }
-    .copy-btn:hover { background: #ebf8ff; }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: #bee3f8;
-      color: #2b6cb0;
-    }
-
-    .validation-ok   { color: #38a169; font-size: 0.8rem; margin-top: 4px; }
-    .validation-err  { color: #e53e3e; font-size: 0.8rem; margin-top: 4px; }
-
-    footer {
-      text-align: center;
-      color: #a0aec0;
-      font-size: 0.8rem;
-      margin-top: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="叫貨備料">
+<meta name="theme-color" content="#0f0f0e">
+<title>廚房叫貨備料系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0e;--sur:#1c1c1a;--sur2:#252522;--bdr:#333330;--acc:#c8a96e;--grn:#7eb89a;--red:#c86e6e;--yel:#c8a96e;--t1:#e8e4dc;--t2:#9a9690;--t3:#5a5752;--sf:'Noto Serif TC',serif;--mo:'DM Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--t1);font-family:var(--sf);padding-bottom:88px;min-height:100vh}
+.hdr{background:var(--sur);border-bottom:1px solid var(--bdr);padding:14px 18px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.hdr h1{font-size:17px;font-weight:700;color:var(--acc);letter-spacing:1px}
+.dtag{font-family:var(--mo);font-size:11px;color:var(--t2);background:var(--sur2);padding:4px 9px;border-radius:4px}
+.nav{display:flex;background:var(--sur);border-bottom:1px solid var(--bdr);overflow-x:auto}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex:1;min-width:56px;padding:11px 4px;font-family:var(--sf);font-size:11px;color:var(--t2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.2s;text-align:center}
+.nb.on{color:var(--acc);border-bottom-color:var(--acc)}
+.pg{display:none;padding:14px}.pg.on{display:block}
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-bottom:12px}
+.ct{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
+.ohdr{display:grid;grid-template-columns:1fr 80px 44px;gap:6px;font-size:10px;color:var(--t3);font-family:var(--mo);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:2px;text-align:center}
+.ohdr span:first-child{text-align:left}
+.or{display:grid;grid-template-columns:1fr 80px 44px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.or:last-child{border-bottom:none}
+.in{font-size:13px;font-weight:600}.iu{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mo)}
+.ni{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;color:var(--t1);font-family:var(--mo);font-size:13px;text-align:center;padding:7px 2px;-webkit-appearance:none}
+.ni:focus{outline:none;border-color:var(--acc)}
+.ni.zero{opacity:.32}
+.nospinner::-webkit-inner-spin-button,.nospinner::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.nospinner{-moz-appearance:textfield}
+.lhdr{display:grid;grid-template-columns:1fr 64px 64px 64px;gap:5px;font-size:10px;color:var(--t3);font-family:var(--mo);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:2px;text-align:center}
+.lhdr span:first-child{text-align:left}
+.lr{display:grid;grid-template-columns:1fr 64px 64px 64px;gap:5px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.lr:last-child{border-bottom:none}
+.expbox{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:14px;font-family:var(--mo);font-size:14px;color:var(--t1);white-space:pre-wrap;line-height:2;margin-bottom:12px}
+.btn{padding:11px 16px;border-radius:8px;border:none;cursor:pointer;font-family:var(--sf);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.bp{background:var(--acc);color:#1a1a1a}.bp:active{opacity:.8}
+.bs{background:var(--sur2);color:var(--t2);border:1px solid var(--bdr)}
+.bg{background:var(--grn);color:#1a1a1a}
+.br{background:var(--red);color:#fff}
+.bf{width:100%;justify-content:center}.bsm{padding:6px 11px;font-size:12px}
+.brow{display:flex;gap:8px;margin-top:13px}
+.ch{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;padding:11px 0 3px;font-family:var(--mo)}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--grn);color:#1a1a1a;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:999}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--bdr)}.sr:last-child{border-bottom:none}
+.sl{font-size:13px}.ssub{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mo)}
+.shdr{display:grid;grid-template-columns:1fr 80px 36px;gap:6px;font-size:10px;color:var(--t3);font-family:var(--mo);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:2px;text-align:center}
+.shdr span:first-child{text-align:left}
+.srow{display:grid;grid-template-columns:1fr 80px 36px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)}.srow:last-child{border-bottom:none}
+.del-btn{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:4px;line-height:1}
+.add-form{background:var(--sur2);border-radius:8px;padding:12px;margin-top:10px;border:1px solid var(--bdr)}
+.add-form input{background:var(--bg);border:1px solid var(--bdr);border-radius:6px;color:var(--t1);font-family:var(--sf);font-size:13px;padding:8px 10px;width:100%;margin-bottom:8px;-webkit-appearance:none}
+.add-form input:focus{outline:none;border-color:var(--acc)}
+.add-form label{font-size:11px;color:var(--t3);font-family:var(--mo);display:block;margin-bottom:3px}
+.add-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.loss-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.loss-meta input{background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;color:var(--t1);font-family:var(--sf);font-size:13px;padding:8px 10px;width:100%;-webkit-appearance:none}
+.loss-meta input:focus{outline:none;border-color:var(--acc)}
+.loss-meta label{font-size:11px;color:var(--t3);font-family:var(--mo);display:block;margin-bottom:3px}
+.lcard{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:11px;margin-bottom:9px}
+.ltag{display:inline-block;background:rgba(200,169,110,.15);color:var(--acc);font-family:var(--mo);font-size:10px;padding:2px 7px;border-radius:4px}
+.pct{font-family:var(--mo);font-size:10px;padding:2px 4px;border-radius:3px}
+.clrg{color:var(--grn)}.clrw{color:var(--yel)}.clrb{color:var(--red)}
+@media print{body,html{background:#fff!important;color:#000!important;padding:0!important}.hdr,.nav,.nopr{display:none!important}.pg{display:block!important;padding:10px!important}.card{border:1px solid #ccc!important;margin-bottom:8px!important;break-inside:avoid}}
+</style>
 </head>
 <body>
-
-<header>
-  <h1>廚房備料管理系統</h1>
-  <p>Kitchen Automation System &nbsp;|&nbsp; 雙重校驗 · n8n 中台 · LINE 機器人整合</p>
-</header>
-
-<!-- 模式切換 -->
-<div class="card">
-  <h2>操作模式</h2>
-  <div class="mode-tabs">
-    <button class="active" onclick="switchMode('add')">新增備料紀錄</button>
-    <button onclick="switchMode('update')">修改已有紀錄</button>
+<div class="hdr">
+  <h1>🔪 備料叫貨</h1>
+  <span class="dtag" id="dtag">--</span>
+</div>
+<nav class="nav">
+  <button class="nb on" onclick="showPg('ord')">叫貨單</button>
+  <button class="nb"    onclick="showPg('exp')">匯出</button>
+  <button class="nb"    onclick="showPg('loss')">損耗回報</button>
+  <button class="nb"    onclick="showPg('set')">設定</button>
+</nav>
+ 
+<!-- 叫貨單 -->
+<section class="pg on" id="pg-ord">
+  <div class="card">
+    <div class="ct">📋 今日叫貨單</div>
+    <p style="font-size:11px;color:var(--t2);margin-bottom:12px">填入今天要叫的數量；填 <strong style="color:var(--acc)">0</strong> 或空白略過。</p>
+    <div class="ohdr"><span>品項</span><span>叫貨數量</span><span>單位</span></div>
+    <div id="ordList"></div>
+    <div class="brow">
+      <button class="btn bs" onclick="clearOrd()" style="flex:1">✕ 清空</button>
+      <button class="btn bg" onclick="confirmOrd()" style="flex:1">✓ 確認送出</button>
+    </div>
   </div>
-
-  <!-- 校驗說明 -->
-  <div class="hint" id="hint-add">
-    系統將執行 <strong>雙重校驗</strong>：<br>
-    1. <strong>群組權限驗證</strong>：僅接受指定 LINE 群組的訊息<br>
-    2. <strong>品項白名單比對</strong>：品項須存在於 Google Sheets 名單<br><br>
-    格式範例：<code>20250411/雞胸肉/5000/4200/小明</code>（無退冰）<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>20250411/豬里肌/3000/500/2100/小華</code>（含退冰）
+</section>
+ 
+<!-- 匯出 -->
+<section class="pg" id="pg-exp">
+  <div class="card" id="ordExpCard" style="display:none">
+    <div class="ct">📤 叫貨單</div>
+    <div id="ordExpMeta" style="font-size:11px;color:var(--t2);margin-bottom:11px"></div>
+    <div id="ordExpBox" class="expbox"></div>
+    <div class="brow nopr">
+      <button class="btn bs" onclick="doCopy('ordExpBox')" style="flex:1">📋 複製</button>
+      <button class="btn bs" onclick="window.print()" style="flex:1">🖨 列印</button>
+    </div>
   </div>
-  <div class="hint" id="hint-update" style="display:none">
-    修改格式：<code>修改/行號/日期/品項/進貨重量/成品重量/負責人</code><br>
-    行號為試算表中的資料列號（從 1 開始，不含標題列）。
+  <div id="lossExpChunks"></div>
+  <p id="expEmpty" style="color:var(--t3);font-size:13px;text-align:center;padding:40px 0">尚未產生任何單據</p>
+</section>
+ 
+<!-- 損耗回報 -->
+<section class="pg" id="pg-loss">
+  <div class="card">
+    <div class="ct">⚠️ 損耗回報</div>
+    <div class="loss-meta">
+      <div>
+        <label>日期（8位數）</label>
+        <input type="text" id="lDate" inputmode="numeric" maxlength="8" placeholder="20250628">
+      </div>
+      <div>
+        <label>負責人</label>
+        <input type="text" id="lPerson" placeholder="姓名">
+      </div>
+    </div>
+    <div class="lhdr">
+      <span>品項</span><span>進貨(g)</span><span>退冰(g)</span><span>成品(g)</span>
+    </div>
+    <div id="lossInputList"></div>
+    <div class="brow">
+      <button class="btn bs" onclick="clearLossForm()" style="flex:1">✕ 清空</button>
+      <button class="btn bg" onclick="confirmLoss()" style="flex:1">✓ 確認送出</button>
+    </div>
   </div>
-
-  <!-- 新增表單 -->
-  <form id="form-add" onsubmit="return false">
-    <div class="row-2">
-      <div class="form-group">
-        <label>日期</label>
-        <input type="date" id="add-date" />
-      </div>
-      <div class="form-group">
-        <label>品項名稱</label>
-        <input type="text" id="add-item" placeholder="例：雞胸肉" />
-      </div>
-    </div>
-    <div class="row-3">
-      <div class="form-group">
-        <label>進貨重量 (g)</label>
-        <input type="number" id="add-in" placeholder="5000" min="0" />
-      </div>
-      <div class="form-group">
-        <label>退冰重量 (g) <span class="badge">選填</span></label>
-        <input type="number" id="add-thaw" placeholder="0" min="0" />
-      </div>
-      <div class="form-group">
-        <label>成品重量 (g)</label>
-        <input type="number" id="add-out" placeholder="4200" min="0" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label>負責人</label>
-      <input type="text" id="add-person" placeholder="例：小明" />
-    </div>
-    <button class="btn-primary" onclick="generateAdd()">產生 LINE 訊息格式</button>
-  </form>
-
-  <!-- 修改表單 -->
-  <form id="form-update" style="display:none" onsubmit="return false">
-    <div class="row-2">
-      <div class="form-group">
-        <label>修改行號</label>
-        <input type="number" id="upd-row" placeholder="1" min="1" />
-      </div>
-      <div class="form-group">
-        <label>日期</label>
-        <input type="date" id="upd-date" />
-      </div>
-    </div>
-    <div class="form-group">
+  <div class="card">
+    <div class="ct">📊 損耗紀錄</div>
+    <div id="lossHisList"><p style="color:var(--t3);font-size:13px;text-align:center;padding:22px 0">尚無損耗紀錄</p></div>
+  </div>
+</section>
+ 
+<!-- 設定 -->
+<section class="pg" id="pg-set">
+  <div class="card">
+    <div class="ct">🌿 品項管理</div>
+    <div class="shdr"><span>品項（單位）</span><span>輸出縮寫</span><span></span></div>
+    <div id="ssList"></div>
+    <div class="brow"><button class="btn bp bf" onclick="saveSettings()">💾 儲存</button></div>
+  </div>
+  <div class="card">
+    <div class="ct">➕ 新增品項</div>
+    <div class="add-form">
       <label>品項名稱</label>
-      <input type="text" id="upd-item" placeholder="例：豬里肌" />
-    </div>
-    <div class="row-3">
-      <div class="form-group">
-        <label>進貨重量 (g)</label>
-        <input type="number" id="upd-in" placeholder="3000" min="0" />
+      <input type="text" id="newName" placeholder="例：紫蘇葉">
+      <div class="row2">
+        <div><label>類別</label><input type="text" id="newCat" placeholder="例：香草" list="catList"><datalist id="catList"></datalist></div>
+        <div><label>單位</label><input type="text" id="newUnit" placeholder="kg / 根 / 顆 / 盒"></div>
       </div>
-      <div class="form-group">
-        <label>退冰重量 (g) <span class="badge">選填</span></label>
-        <input type="number" id="upd-thaw" placeholder="0" min="0" />
-      </div>
-      <div class="form-group">
-        <label>成品重量 (g)</label>
-        <input type="number" id="upd-out" placeholder="2100" min="0" />
-      </div>
+      <label>輸出縮寫</label>
+      <input type="text" id="newLabel" placeholder="k / 根 / 顆 / 盒">
+      <button class="btn bp bf" onclick="addItem()">＋ 新增</button>
     </div>
-    <div class="form-group">
-      <label>負責人</label>
-      <input type="text" id="upd-person" placeholder="例：小華" />
+  </div>
+  <div class="card">
+    <div class="ct">🗑 資料管理</div>
+    <div class="sr">
+      <div><div class="sl">清除所有損耗紀錄</div><div class="ssub">損耗回報記錄全部刪除</div></div>
+      <button class="btn br bsm" onclick="clearAllLoss()">清除</button>
     </div>
-    <button class="btn-primary" onclick="generateUpdate()">產生 LINE 訊息格式</button>
-  </form>
-
-  <!-- 輸出 -->
-  <div class="output-box" id="output"></div>
-  <button class="copy-btn" id="copy-btn" onclick="copyOutput()">複製訊息</button>
-</div>
-
-<!-- 格式說明 -->
-<div class="card">
-  <h2>格式速查</h2>
-  <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
-    <thead>
-      <tr style="background:#f7fafc">
-        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">操作</th>
-        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">格式</th>
-        <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0">段數</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">新增（無退冰）</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">日期/品項/進貨/成品/負責人</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">5 段</td>
-      </tr>
-      <tr>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">新增（含退冰）</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">日期/品項/進貨/退冰/成品/負責人</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">6 段</td>
-      </tr>
-      <tr>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">修改（無退冰）</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:0.82rem">修改/行號/日期/品項/進貨/成品/負責人</td>
-        <td style="padding:10px;border-bottom:1px solid #e2e8f0">7 段</td>
-      </tr>
-      <tr>
-        <td style="padding:10px">修改（含退冰）</td>
-        <td style="padding:10px;font-family:monospace;font-size:0.82rem">修改/行號/日期/品項/進貨/退冰/成品/負責人</td>
-        <td style="padding:10px">8 段</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<footer>Kitchen Automation System &copy; 2025 &nbsp;|&nbsp; Powered by n8n &amp; LINE Bot</footer>
-
+  </div>
+  <div class="card">
+    <div class="ct">📱 加入 iPhone 主畫面</div>
+    <p style="font-size:13px;color:var(--t2);line-height:2.2">
+      1. 用 <strong style="color:var(--acc)">Safari</strong> 開啟此頁面<br>
+      2. 點底部 <strong style="color:var(--acc)">□↑ 分享</strong> 按鈕<br>
+      3. 選 <strong style="color:var(--acc)">「加入主畫面」</strong><br>
+      4. 像 App 一樣點圖示開啟，資料不會消失 ✓
+    </p>
+  </div>
+</section>
+ 
+<div class="toast" id="toast"></div>
+ 
 <script>
-  function switchMode(mode) {
-    const isAdd = mode === 'add';
-    document.getElementById('form-add').style.display    = isAdd ? '' : 'none';
-    document.getElementById('form-update').style.display = isAdd ? 'none' : '';
-    document.getElementById('hint-add').style.display    = isAdd ? '' : 'none';
-    document.getElementById('hint-update').style.display = isAdd ? 'none' : '';
-    document.querySelectorAll('.mode-tabs button').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0) === isAdd);
-    });
-    hideOutput();
-  }
-
-  function formatDate(val) {
-    // yyyy-mm-dd → yyyymmdd
-    return val.replace(/-/g, '');
-  }
-
-  function generateAdd() {
-    const date   = document.getElementById('add-date').value;
-    const item   = document.getElementById('add-item').value.trim();
-    const inW    = document.getElementById('add-in').value;
-    const thaw   = document.getElementById('add-thaw').value;
-    const outW   = document.getElementById('add-out').value;
-    const person = document.getElementById('add-person').value.trim();
-
-    if (!date || !item || !inW || !outW || !person) {
-      showOutput('❌ 請填寫所有必填欄位（退冰重量除外）', true);
-      return;
+var DEFAULT_INGS = [
+  {id:'zucchini',   name:'節瓜',       cat:'蔬菜', unit:'根', ordLabel:'根'},
+  {id:'potato',     name:'白玉馬鈴薯',  cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'celery',     name:'西芹',        cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'ronion',     name:'紫洋蔥',      cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'greenbeans', name:'四季豆',      cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'cucumber',   name:'大黃瓜',      cat:'蔬菜', unit:'根', ordLabel:'根'},
+  {id:'yolettuce',  name:'黃捲',        cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'shallot',    name:'迷你紫洋蔥',  cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'asparagus',  name:'小蘆筍',      cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'onion',      name:'洋蔥',        cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'carrot',     name:'紅蘿蔔',      cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'garlic',     name:'大蒜仁',       cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'tomato_b',   name:'牛番茄',      cat:'番茄', unit:'kg', ordLabel:'kg'},
+  {id:'tomato_t',   name:'桃太郎番茄',  cat:'番茄', unit:'kg', ordLabel:'kg', noOrd:true},
+  {id:'tomato_y',   name:'玉女番茄',    cat:'番茄', unit:'kg', ordLabel:'kg'},
+  {id:'shimeji',    name:'鴻禧菇',      cat:'菇類', unit:'包', ordLabel:'包'},
+  {id:'oyster_m',   name:'秀珍菇',      cat:'菇類', unit:'kg', ordLabel:'kg'},
+  {id:'dill',       name:'蒔蘿',        cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'basil',      name:'羅勒',        cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'arugula',    name:'芝麻葉',      cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'watercress', name:'水田芥',      cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'parsley',    name:'歐芹',        cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'rosemary',   name:'迷迭香',      cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'chervil',    name:'山蘿蔔葉',    cat:'香草', unit:'kg', ordLabel:'kg'},
+  {id:'ylemon',     name:'黃檸檬',      cat:'柑橘', unit:'顆', ordLabel:'顆'},
+  {id:'glemon',     name:'綠檸檬',      cat:'柑橘', unit:'顆', ordLabel:'顆'},
+  {id:'egg',        name:'雞蛋',        cat:'蛋類', unit:'盒', ordLabel:'盒', noLoss:true},
+  {id:'onion_str',  name:'洋蔥絲',      cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'carrot_dic', name:'紅蘿蔔丁',    cat:'蔬菜', unit:'kg', ordLabel:'kg'},
+  {id:'chick_liv',  name:'雞肝',        cat:'肉類', unit:'kg', ordLabel:'kg'}
+];
+ 
+var INGS = [];
+var ordQty = {};
+var lossHis = [];
+var lastOrdExp = '';
+var ordLabels = {};
+var lossInputs = {};
+ 
+// ── load / save ──────────────────────────────────────────
+function load() {
+  try {
+    var a = localStorage.getItem('k4_ings');   if (a) INGS = JSON.parse(a);
+    var b = localStorage.getItem('k4_loss');   if (b) lossHis = JSON.parse(b);
+    var c = localStorage.getItem('k4_ordexp'); if (c) lastOrdExp = c;
+    var d = localStorage.getItem('k4_labels'); if (d) ordLabels = JSON.parse(d);
+    var e = localStorage.getItem('k4_qty');    if (e) ordQty = JSON.parse(e);
+  } catch(err) {}
+  if (!INGS || !INGS.length) INGS = JSON.parse(JSON.stringify(DEFAULT_INGS));
+  // 修補：把 DEFAULT_INGS 裡有但 localStorage 沒有的品項自動補入
+  for (var di = 0; di < DEFAULT_INGS.length; di++) {
+    var found = false;
+    for (var xi = 0; xi < INGS.length; xi++) {
+      if (INGS[xi].id === DEFAULT_INGS[di].id) { found = true; break; }
     }
-
-    const d = formatDate(date);
-    const msg = thaw && thaw !== '0'
-      ? `${d}/${item}/${inW}/${thaw}/${outW}/${person}`
-      : `${d}/${item}/${inW}/${outW}/${person}`;
-
-    showOutput(msg);
+    if (!found) INGS.push(JSON.parse(JSON.stringify(DEFAULT_INGS[di])));
   }
-
-  function generateUpdate() {
-    const row    = document.getElementById('upd-row').value;
-    const date   = document.getElementById('upd-date').value;
-    const item   = document.getElementById('upd-item').value.trim();
-    const inW    = document.getElementById('upd-in').value;
-    const thaw   = document.getElementById('upd-thaw').value;
-    const outW   = document.getElementById('upd-out').value;
-    const person = document.getElementById('upd-person').value.trim();
-
-    if (!row || !date || !item || !inW || !outW || !person) {
-      showOutput('❌ 請填寫所有必填欄位（退冰重量除外）', true);
-      return;
+  // 修補：確保雞蛋永遠有 noLoss 標記（相容舊 localStorage 資料）
+  for (var ii = 0; ii < INGS.length; ii++) {
+    if (INGS[ii].id === 'egg')     INGS[ii].noLoss = true;
+    if (INGS[ii].id === 'garlic')  INGS[ii].name   = '大蒜仁';
+    if (INGS[ii].id === 'tomato_t') INGS[ii].noOrd = true;
+  }
+  for (var i = 0; i < INGS.length; i++) {
+    var g = INGS[i];
+    if (!ordLabels[g.id]) ordLabels[g.id] = g.ordLabel;
+    // 修補：舊資料的 'k' 一律升級為 'kg'
+    if (ordLabels[g.id] === 'k') ordLabels[g.id] = 'kg';
+    if (!lossInputs[g.id]) lossInputs[g.id] = {incoming:'', thawed:'', finished:''};
+  }
+}
+ 
+function save() {
+  try {
+    localStorage.setItem('k4_ings',   JSON.stringify(INGS));
+    localStorage.setItem('k4_loss',   JSON.stringify(lossHis));
+    localStorage.setItem('k4_ordexp', lastOrdExp);
+    localStorage.setItem('k4_labels', JSON.stringify(ordLabels));
+    localStorage.setItem('k4_qty',    JSON.stringify(ordQty));
+  } catch(err) {}
+}
+ 
+// ── helpers ──────────────────────────────────────────────
+function cats() {
+  var seen = {}, result = [];
+  for (var i = 0; i < INGS.length; i++) {
+    if (!seen[INGS[i].cat]) { seen[INGS[i].cat] = true; result.push(INGS[i].cat); }
+  }
+  return result;
+}
+function icon(c) {
+  var m = {蔬菜:'🥬', 香草:'🌿', 柑橘:'🍋', 蛋類:'🥚', 番茄:'🍅', 肉類:'🥩', 菇類:'🍄'};
+  return m[c] || '🍱';
+}
+function fmtToday() {
+  var n = new Date(), w = ['日','一','二','三','四','五','六'];
+  return n.getFullYear() + '/' + (n.getMonth()+1) + '/' + n.getDate() + ' 週' + w[n.getDay()];
+}
+function todayStr8() {
+  var n = new Date();
+  return n.getFullYear() + pad2(n.getMonth()+1) + pad2(n.getDate());
+}
+function pad2(x) { return x < 10 ? '0'+x : ''+x; }
+function fmtNum(n) { return parseFloat(n.toFixed(3)).toString(); }
+function stepFor(u) { return u === 'kg' ? 0.01 : 1; }
+function pctClass(p, inverse) {
+  if (p === null || isNaN(p)) return '';
+  if (inverse) return p > 15 ? 'clrb' : p > 8 ? 'clrw' : 'clrg';
+  return p < 60 ? 'clrb' : p < 80 ? 'clrw' : 'clrg';
+}
+ 
+// ── 叫貨單 ───────────────────────────────────────────────
+function renderOrd() {
+  var catList = cats();
+  var h = '';
+  for (var ci = 0; ci < catList.length; ci++) {
+    var cat = catList[ci];
+    h += '<div class="ch">' + icon(cat) + ' ' + cat + '</div>';
+    for (var i = 0; i < INGS.length; i++) {
+      var g = INGS[i];
+      if (g.cat !== cat) continue;
+      if (g.noOrd) continue;
+      var val = ordQty[g.id] !== undefined ? ordQty[g.id] : '';
+      var isZero = String(val).trim() === '0';
+      var lbl = ordLabels[g.id] || g.ordLabel;
+      h += '<div class="or">' +
+        '<div><div class="in">' + g.name + '</div></div>' +
+        '<input class="ni' + (isZero ? ' zero' : '') + '" type="number" inputmode="decimal" min="0" step="' + stepFor(g.unit) + '"' +
+        ' value="' + val + '" placeholder="—" oninput="upOrd(\'' + g.id + '\',this)" id="oq_' + g.id + '">' +
+        '<div style="font-size:12px;color:var(--t2);font-family:var(--mo);text-align:center;padding-top:2px">' + lbl + '</div>' +
+        '</div>';
     }
-
-    const d = formatDate(date);
-    const msg = thaw && thaw !== '0'
-      ? `修改/${row}/${d}/${item}/${inW}/${thaw}/${outW}/${person}`
-      : `修改/${row}/${d}/${item}/${inW}/${outW}/${person}`;
-
-    showOutput(msg);
   }
-
-  function showOutput(text, isError = false) {
-    const box = document.getElementById('output');
-    const btn = document.getElementById('copy-btn');
-    box.textContent = text;
-    box.style.color = isError ? '#fc8181' : '#68d391';
-    box.classList.add('visible');
-    btn.classList.toggle('visible', !isError);
+  document.getElementById('ordList').innerHTML = h;
+}
+ 
+function upOrd(id, el) {
+  ordQty[id] = el.value;
+  el.className = 'ni' + (String(el.value).trim() === '0' ? ' zero' : '');
+  save();
+}
+ 
+function clearOrd() {
+  if (!confirm('確定清空所有叫貨數量？')) return;
+  for (var i = 0; i < INGS.length; i++) ordQty[INGS[i].id] = '';
+  save(); renderOrd(); showToast('已清空');
+}
+ 
+function confirmOrd() {
+  var lines = [];
+  for (var i = 0; i < INGS.length; i++) {
+    var g = INGS[i];
+    if (g.noOrd) continue;
+    var el = document.getElementById('oq_' + g.id);
+    var raw = el ? el.value : (ordQty[g.id] || '');
+    var v = String(raw).trim();
+    if (v === '' || v === '0') continue;
+    var qty = parseFloat(v);
+    if (isNaN(qty) || qty <= 0) continue;
+    var lbl = ordLabels[g.id] || g.ordLabel;
+    lines.push(g.name + '-' + (fmtNum(qty) + lbl));
   }
-
-  function hideOutput() {
-    document.getElementById('output').classList.remove('visible');
-    document.getElementById('copy-btn').classList.remove('visible');
+  if (!lines.length) { showToast('沒有填入任何叫貨數量'); return; }
+  lastOrdExp = lines.join('\n');
+  save();
+  renderOrdExp(lastOrdExp);
+  renderLossExpChunks(null); // clear loss chunks when showing order
+  showPg('exp');
+  showToast('✓ 叫貨單已產生');
+}
+ 
+// ── 匯出 ─────────────────────────────────────────────────
+function renderOrdExp(text) {
+  var card = document.getElementById('ordExpCard');
+  var box  = document.getElementById('ordExpBox');
+  var meta = document.getElementById('ordExpMeta');
+  var empty = document.getElementById('expEmpty');
+  if (!text) {
+    card.style.display = 'none';
+    if (!document.getElementById('lossExpChunks').innerHTML) empty.style.display = 'block';
+    return;
   }
-
-  function copyOutput() {
-    const text = document.getElementById('output').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '已複製！';
-      setTimeout(() => { btn.textContent = '複製訊息'; }, 1500);
+  card.style.display = 'block';
+  meta.textContent = fmtToday();
+  box.textContent = text;
+  empty.style.display = 'none';
+}
+ 
+function renderLossExpChunks(lines) {
+  var container = document.getElementById('lossExpChunks');
+  var empty = document.getElementById('expEmpty');
+  if (!lines || !lines.length) {
+    container.innerHTML = '';
+    if (!lastOrdExp) empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  var CHUNK = 10;
+  var total = Math.ceil(lines.length / CHUNK);
+  var h = '';
+  for (var i = 0; i < lines.length; i += CHUNK) {
+    var chunk = lines.slice(i, i + CHUNK);
+    var num = Math.floor(i / CHUNK) + 1;
+    var boxId = 'lossChunk_' + num;
+    var label = total > 1 ? ' (' + num + '/' + total + ')' : '';
+    h += '<div class="card">' +
+      '<div class="ct">📤 匯出損耗紀錄' + label + '</div>' +
+      '<div class="expbox" id="' + boxId + '">' + chunk.join('\n') + '</div>' +
+      '<div class="brow nopr">' +
+      '<button class="btn bs bf" onclick="doCopy(\'' + boxId + '\')">📋 複製第' + num + '批</button>' +
+      '</div></div>';
+  }
+  container.innerHTML = h;
+}
+ 
+function doCopy(boxId) {
+  var text = document.getElementById(boxId).textContent;
+  if (!text) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { showToast('✓ 已複製！'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('✓ 已複製！'); }
+    catch(e) { showToast('請手動長按複製'); }
+    document.body.removeChild(ta);
+  }
+}
+ 
+// ── 損耗回報 ─────────────────────────────────────────────
+function renderLossInputList() {
+  var catList = cats();
+  var h = '';
+  for (var ci = 0; ci < catList.length; ci++) {
+    var cat = catList[ci];
+    h += '<div class="ch">' + icon(cat) + ' ' + cat + '</div>';
+    for (var i = 0; i < INGS.length; i++) {
+      var g = INGS[i];
+      if (g.cat !== cat) continue;
+      if (g.noLoss) continue;
+      var li = lossInputs[g.id] || {incoming:'', thawed:'', finished:''};
+      h += '<div class="lr">' +
+        '<div><div class="in">' + g.name + '</div><div class="iu">' + g.unit + '</div></div>' +
+        '<input class="ni nospinner" type="number" inputmode="decimal" min="0" step="0.01"' +
+        ' value="' + li.incoming + '" placeholder="—"' +
+        ' oninput="upLoss(\'' + g.id + '\',\'incoming\',this.value)" id="li_' + g.id + '">' +
+        '<input class="ni nospinner" type="number" inputmode="decimal" min="0" step="0.01"' +
+        ' value="' + li.thawed + '" placeholder="—"' +
+        ' oninput="upLoss(\'' + g.id + '\',\'thawed\',this.value)" id="lt_' + g.id + '">' +
+        '<input class="ni nospinner" type="number" inputmode="decimal" min="0" step="0.01"' +
+        ' value="' + li.finished + '" placeholder="—"' +
+        ' oninput="upLoss(\'' + g.id + '\',\'finished\',this.value)" id="lf_' + g.id + '">' +
+        '</div>';
+    }
+  }
+  document.getElementById('lossInputList').innerHTML = h;
+}
+ 
+function upLoss(id, field, val) {
+  if (!lossInputs[id]) lossInputs[id] = {incoming:'', thawed:'', finished:''};
+  lossInputs[id][field] = val;
+}
+ 
+function clearLossForm() {
+  for (var i = 0; i < INGS.length; i++) {
+    lossInputs[INGS[i].id] = {incoming:'', thawed:'', finished:''};
+  }
+  renderLossInputList(); showToast('已清空');
+}
+ 
+function confirmLoss() {
+  var dateVal = document.getElementById('lDate').value.trim();
+  var person  = document.getElementById('lPerson').value.trim();
+  if (!dateVal || dateVal.length !== 8) { showToast('請填寫8位數日期，例：20250628'); return; }
+  if (!person) { showToast('請填寫負責人'); return; }
+ 
+  var entries = [];
+  for (var i = 0; i < INGS.length; i++) {
+    var g = INGS[i];
+    var iEl = document.getElementById('li_' + g.id);
+    var tEl = document.getElementById('lt_' + g.id);
+    var fEl = document.getElementById('lf_' + g.id);
+    var incoming = parseFloat(iEl ? iEl.value : '');
+    var thawedRaw = tEl ? tEl.value.trim() : '';
+    var thawed   = parseFloat(thawedRaw);
+    var finished = parseFloat(fEl ? fEl.value : '');
+    if (isNaN(incoming) || incoming <= 0) continue;
+    if (isNaN(finished) || finished < 0) continue;
+    var hasThaw = thawedRaw !== '' && !isNaN(thawed);
+    entries.push({
+      id: g.id, name: g.name, unit: g.unit,
+      incoming: incoming,
+      thawed: hasThaw ? thawed : null,
+      finished: finished
     });
   }
-
-  // 預設日期為今天
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('add-date').value = today;
-  document.getElementById('upd-date').value = today;
+ 
+  if (!entries.length) { showToast('請至少填寫一項品項的進貨與成品重量'); return; }
+ 
+  lossHis.push({date: dateVal, person: person, entries: entries});
+  save();
+  renderLossHisList();
+ 
+  // 產生匯出文字
+  var lines = [];
+  for (var j = 0; j < entries.length; j++) {
+    var e = entries[j];
+    if (e.thawed !== null) {
+      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.thawed + '/' + e.finished + '/' + person);
+    } else {
+      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.finished + '/' + person);
+    }
+  }
+ 
+  renderOrdExp(null); // hide order export
+  renderLossExpChunks(lines);
+  showPg('exp');
+  showToast('✓ 損耗紀錄已產生');
+  clearLossForm();
+}
+ 
+function renderLossHisList() {
+  if (!lossHis.length) {
+    document.getElementById('lossHisList').innerHTML =
+      '<p style="color:var(--t3);font-size:13px;text-align:center;padding:22px 0">尚無損耗紀錄</p>';
+    return;
+  }
+  var h = '';
+  for (var ri = lossHis.length - 1; ri >= 0; ri--) {
+    var r = lossHis[ri];
+    h += '<div class="lcard">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<div><span class="ltag">' + r.date + '</span>' +
+      '<span style="font-size:12px;color:var(--t2);margin-left:8px">' + r.person + '</span></div>' +
+      '<button class="del-btn" onclick="delLoss(' + ri + ')">🗑</button>' +
+      '</div>';
+    for (var j = 0; j < r.entries.length; j++) {
+      var e = r.entries[j];
+      var thawLoss = (e.thawed !== null && e.incoming > 0) ? ((e.incoming - e.thawed) / e.incoming * 100) : null;
+      var totalYield = e.incoming > 0 ? (e.finished / e.incoming * 100) : null;
+      h += '<div style="padding:6px 0;border-bottom:1px solid var(--bdr)">' +
+        '<div style="font-size:12px;font-weight:600;margin-bottom:4px">' + e.name + '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--mo);color:var(--t2)">' +
+        '<span>進貨 ' + e.incoming + 'g</span>';
+      if (e.thawed !== null) {
+        h += '<span>退冰 ' + e.thawed + 'g';
+        if (thawLoss !== null) h += ' <span class="pct ' + pctClass(thawLoss, true) + '">'+ '-' + thawLoss.toFixed(1) + '%</span>';
+        h += '</span>';
+      }
+      h += '<span>成品 ' + e.finished + 'g</span>';
+      if (totalYield !== null) {
+        h += '<span class="pct ' + pctClass(totalYield, false) + '">出成 ' + totalYield.toFixed(1) + '%</span>';
+      }
+      h += '</div></div>';
+    }
+    h += '</div>';
+  }
+  document.getElementById('lossHisList').innerHTML = h;
+}
+ 
+function delLoss(idx) { lossHis.splice(idx, 1); save(); renderLossHisList(); showToast('紀錄已刪除'); }
+function clearAllLoss() {
+  if (!confirm('確定清除所有損耗紀錄？')) return;
+  lossHis = []; save(); renderLossHisList(); showToast('損耗紀錄已清除');
+}
+ 
+// ── 設定 ─────────────────────────────────────────────────
+function renderSS() {
+  var catList = cats();
+  var h = '';
+  for (var ci = 0; ci < catList.length; ci++) {
+    var cat = catList[ci];
+    h += '<div class="ch">' + icon(cat) + ' ' + cat + '</div>';
+    for (var i = 0; i < INGS.length; i++) {
+      var g = INGS[i];
+      if (g.cat !== cat) continue;
+      h += '<div class="srow">' +
+        '<div><div class="in">' + g.name + '</div><div style="font-size:10px;color:var(--t3);font-family:var(--mo)">' + g.unit + '</div></div>' +
+        '<input class="ni" type="text" value="' + (ordLabels[g.id] || g.ordLabel) + '" id="lbl_' + g.id + '" style="font-size:12px">' +
+        '<button class="del-btn" onclick="delItem(\'' + g.id + '\')">🗑</button>' +
+        '</div>';
+    }
+  }
+  document.getElementById('ssList').innerHTML = h;
+  var dl = document.getElementById('catList');
+  var catList2 = cats();
+  var opts = '';
+  for (var k = 0; k < catList2.length; k++) opts += '<option value="' + catList2[k] + '">';
+  dl.innerHTML = opts;
+}
+ 
+function saveSettings() {
+  for (var i = 0; i < INGS.length; i++) {
+    var g = INGS[i];
+    var el = document.getElementById('lbl_' + g.id);
+    if (el) ordLabels[g.id] = el.value.trim() || g.ordLabel;
+  }
+  save(); renderOrd(); showToast('✓ 設定已儲存');
+}
+ 
+function addItem() {
+  var name  = document.getElementById('newName').value.trim();
+  var cat   = document.getElementById('newCat').value.trim();
+  var unit  = document.getElementById('newUnit').value.trim() || 'kg';
+  var label = document.getElementById('newLabel').value.trim() || (unit === 'kg' ? 'k' : unit);
+  if (!name || !cat) { showToast('請填寫品名和類別'); return; }
+  var id = 'c_' + Date.now();
+  INGS.push({id:id, name:name, cat:cat, unit:unit, ordLabel:label});
+  ordLabels[id] = label;
+  lossInputs[id] = {incoming:'', thawed:'', finished:''};
+  save();
+  document.getElementById('newName').value = '';
+  document.getElementById('newCat').value = '';
+  document.getElementById('newUnit').value = '';
+  document.getElementById('newLabel').value = '';
+  renderOrd(); renderSS(); renderLossInputList(); showToast('✓ 已新增「' + name + '」');
+}
+ 
+function delItem(id) {
+  if (!confirm('確定刪除此品項？')) return;
+  INGS = INGS.filter(function(g) { return g.id !== id; });
+  delete ordQty[id]; delete ordLabels[id]; delete lossInputs[id];
+  save(); renderOrd(); renderSS(); renderLossInputList(); showToast('品項已刪除');
+}
+ 
+// ── UI ───────────────────────────────────────────────────
+function showPg(name) {
+  var pages = ['ord','exp','loss','set'];
+  var pgs = document.querySelectorAll('.pg');
+  var nbs = document.querySelectorAll('.nb');
+  for (var i = 0; i < pgs.length; i++) pgs[i].classList.remove('on');
+  for (var i = 0; i < nbs.length; i++) nbs[i].classList.remove('on');
+  var pg = document.getElementById('pg-' + name);
+  if (pg) pg.classList.add('on');
+  var idx = pages.indexOf(name);
+  if (idx >= 0 && nbs[idx]) nbs[idx].classList.add('on');
+}
+ 
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 2400);
+}
+ 
+// ── init ─────────────────────────────────────────────────
+load();
+document.getElementById('dtag').textContent = fmtToday();
+document.getElementById('lDate').value = todayStr8();
+renderOrd();
+renderSS();
+renderLossInputList();
+renderLossHisList();
+if (lastOrdExp) renderOrdExp(lastOrdExp);
 </script>
 </body>
 </html>
