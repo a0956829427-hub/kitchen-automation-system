@@ -9,10 +9,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
-NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")  # Commit 資料庫 ID
-NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")          # 作品集頁面 ID
+NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")             # Commit 資料庫 ID
+NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")                     # 作品集頁面 ID（README）
+NOTION_FRONTEND_GUIDE_PAGE_ID = os.getenv("NOTION_FRONTEND_GUIDE_PAGE_ID")  # 前端使用說明書頁面 ID
+NOTION_LINE_BOT_GUIDE_PAGE_ID = os.getenv("NOTION_LINE_BOT_GUIDE_PAGE_ID")  # LINE 機器人說明書頁面 ID
 GITHUB_REPO_URL = "https://github.com/a0956829427-hub/kitchen-automation-system"
 README_PATH = Path(__file__).parent / "README.md"
+FRONTEND_GUIDE_PATH = Path(__file__).parent / "FRONTEND_GUIDE.md"
+LINE_BOT_GUIDE_PATH = Path(__file__).parent / "LINE_BOT_GUIDE.md"
 
 _NOTION_CODE_LANGUAGES = {
     "bash", "c", "cpp", "csharp", "css", "go", "html", "java", "javascript", 
@@ -168,22 +172,23 @@ def _get_all_block_ids(page_id: str) -> list[str]:
         params["start_cursor"] = resp.get("next_cursor")
     return ids
 
-def sync_readme():
-    print("🚀 同步 README 至 Notion 頁面...")
-    blocks = _parse_readme_to_blocks(README_PATH)
-    
+def sync_page(md_path: Path, page_id: str, label: str):
+    """將指定 Markdown 檔案同步至 Notion 頁面"""
+    print(f"🚀 同步 {label} 至 Notion 頁面...")
+    blocks = _parse_readme_to_blocks(md_path)
+
     # 深度清除：抓取所有 ID 並刪除
-    all_ids = _get_all_block_ids(NOTION_PAGE_ID)
+    all_ids = _get_all_block_ids(page_id)
     if all_ids:
         print(f"  → 偵測到 {len(all_ids)} 個舊區塊，正在清空頁面...")
         for bid in all_ids:
             requests.delete(f"https://api.notion.com/v1/blocks/{bid}", headers=_headers())
-    
+
     # 批次寫入新內容
-    url = f"https://api.notion.com/v1/blocks/{NOTION_PAGE_ID}/children"
+    url = f"https://api.notion.com/v1/blocks/{page_id}/children"
     for s in range(0, len(blocks), 100):
         requests.patch(url, headers=_headers(), json={"children": blocks[s:s+100]})
-    print(f"✅ README 更新完成 (目前頁面共 {len(blocks)} 個區塊)")
+    print(f"✅ {label} 更新完成（共 {len(blocks)} 個區塊）")
 
 # ─────────────────────────── 執行主程式 ───────────────────────────
 
@@ -202,9 +207,17 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Commit 同步失敗: {e}\n")
 
-    # 2. 同步 README
-    if NOTION_PAGE_ID:
+    # 2. 同步 Markdown 頁面
+    pages = [
+        (README_PATH,           NOTION_PAGE_ID,                "README"),
+        (FRONTEND_GUIDE_PATH,   NOTION_FRONTEND_GUIDE_PAGE_ID, "前端使用說明書"),
+        (LINE_BOT_GUIDE_PATH,   NOTION_LINE_BOT_GUIDE_PAGE_ID, "LINE 機器人說明書"),
+    ]
+    for md_path, page_id, label in pages:
+        if not page_id:
+            print(f"⏭  {label}：未設定 PAGE_ID，略過")
+            continue
         try:
-            sync_readme()
+            sync_page(md_path, page_id, label)
         except Exception as e:
-            print(f"❌ README 同步失敗: {e}")
+            print(f"❌ {label} 同步失敗: {e}")
