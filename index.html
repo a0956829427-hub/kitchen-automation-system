@@ -477,6 +477,18 @@ function confirmLoss() {
     if (isNaN(incoming) || incoming <= 0) continue;
     if (isNaN(finished) || finished < 0) continue;
     var hasThaw = thawedRaw !== '' && !isNaN(thawed);
+    // 重量大小關係校驗：進貨 ≥ 退冰 ≥ 成品
+    if (hasThaw) {
+      if (incoming < thawed || thawed < finished) {
+        showToast('❌ ' + g.name + '：數據邏輯錯誤，重量必須符合「進貨 ≥ 退冰 ≥ 成品」');
+        return;
+      }
+    } else {
+      if (incoming < finished) {
+        showToast('❌ ' + g.name + '：數據邏輯錯誤，成品重量不可大於進貨重量');
+        return;
+      }
+    }
     entries.push({
       id: g.id, name: g.name, unit: g.unit,
       incoming: incoming,
