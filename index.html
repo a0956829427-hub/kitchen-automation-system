@@ -66,6 +66,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sf);padding-bottom:8
 .loss-meta input{background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;color:var(--t1);font-family:var(--sf);font-size:13px;padding:8px 10px;width:100%;-webkit-appearance:none}
 .loss-meta input:focus{outline:none;border-color:var(--acc)}
 .loss-meta label{font-size:11px;color:var(--t3);font-family:var(--mo);display:block;margin-bottom:3px}
+.maker-sel{background:var(--sur2);border:1px solid var(--bdr);border-radius:4px;color:var(--acc);font-family:var(--sf);font-size:11px;padding:2px 4px;width:100%;margin-top:5px;-webkit-appearance:none;cursor:pointer;text-align:center}
+.maker-sel:focus{outline:none;border-color:var(--acc)}
 .lcard{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:11px;margin-bottom:9px}
 .ltag{display:inline-block;background:rgba(200,169,110,.15);color:var(--acc);font-family:var(--mo);font-size:10px;padding:2px 7px;border-radius:4px}
 .pct{font-family:var(--mo);font-size:10px;padding:2px 4px;border-radius:3px}
@@ -225,6 +227,7 @@ var lossHis = [];
 var lastOrdExp = '';
 var ordLabels = {};
 var lossInputs = {};
+var MAKERS = ['孟嫻', '孝承', '哲維', '穎晟', '承坤', '柏皓'];
  
 // ── load / save ──────────────────────────────────────────
 function load() {
@@ -255,7 +258,8 @@ function load() {
     if (!ordLabels[g.id]) ordLabels[g.id] = g.ordLabel;
     // 修補：舊資料的 'k' 一律升級為 'kg'
     if (ordLabels[g.id] === 'k') ordLabels[g.id] = 'kg';
-    if (!lossInputs[g.id]) lossInputs[g.id] = {incoming:'', thawed:'', finished:''};
+    if (!lossInputs[g.id]) lossInputs[g.id] = {incoming:'', thawed:'', finished:'', maker:''};
+    if (lossInputs[g.id].maker === undefined) lossInputs[g.id].maker = '';
   }
 }
  
@@ -428,9 +432,14 @@ function renderLossInputList() {
       var g = INGS[i];
       if (g.cat !== cat) continue;
       if (g.noLoss) continue;
-      var li = lossInputs[g.id] || {incoming:'', thawed:'', finished:''};
+      var li = lossInputs[g.id] || {incoming:'', thawed:'', finished:'', maker:''};
+      var makerOpts = '<option value="">同負責人</option>';
+      for (var mi = 0; mi < MAKERS.length; mi++) {
+        makerOpts += '<option value="' + MAKERS[mi] + '"' + (li.maker === MAKERS[mi] ? ' selected' : '') + '>' + MAKERS[mi] + '</option>';
+      }
       h += '<div class="lr">' +
-        '<div><div class="in">' + g.name + '</div><div class="iu">' + g.unit + '</div></div>' +
+        '<div><div class="in">' + g.name + '</div><div class="iu">' + g.unit + '</div>' +
+        '<select class="maker-sel" id="lm_' + g.id + '" onchange="upLoss(\'' + g.id + '\',\'maker\',this.value)">' + makerOpts + '</select></div>' +
         '<input class="ni nospinner" type="number" inputmode="decimal" min="0" step="0.01"' +
         ' value="' + li.incoming + '" placeholder="—"' +
         ' oninput="upLoss(\'' + g.id + '\',\'incoming\',this.value)" id="li_' + g.id + '">' +
@@ -453,7 +462,7 @@ function upLoss(id, field, val) {
  
 function clearLossForm() {
   for (var i = 0; i < INGS.length; i++) {
-    lossInputs[INGS[i].id] = {incoming:'', thawed:'', finished:''};
+    lossInputs[INGS[i].id] = {incoming:'', thawed:'', finished:'', maker:''};
   }
   renderLossInputList(); showToast('已清空');
 }
@@ -493,7 +502,8 @@ function confirmLoss() {
       id: g.id, name: g.name, unit: g.unit,
       incoming: incoming,
       thawed: hasThaw ? thawed : null,
-      finished: finished
+      finished: finished,
+      maker: lossInputs[g.id] ? (lossInputs[g.id].maker || '') : ''
     });
   }
  
@@ -507,10 +517,11 @@ function confirmLoss() {
   var lines = [];
   for (var j = 0; j < entries.length; j++) {
     var e = entries[j];
+    var entryPerson = e.maker || person;
     if (e.thawed !== null) {
-      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.thawed + '/' + e.finished + '/' + person);
+      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.thawed + '/' + e.finished + '/' + entryPerson);
     } else {
-      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.finished + '/' + person);
+      lines.push(dateVal + '/' + e.name + '/' + e.incoming + '/' + e.finished + '/' + entryPerson);
     }
   }
  
@@ -540,8 +551,9 @@ function renderLossHisList() {
       var e = r.entries[j];
       var thawLoss = (e.thawed !== null && e.incoming > 0) ? ((e.incoming - e.thawed) / e.incoming * 100) : null;
       var totalYield = e.incoming > 0 ? (e.finished / e.incoming * 100) : null;
+      var makerTag = (e.maker && e.maker !== r.person) ? ' <span style="font-size:10px;color:var(--acc);font-family:var(--mo)">(' + e.maker + ')</span>' : '';
       h += '<div style="padding:6px 0;border-bottom:1px solid var(--bdr)">' +
-        '<div style="font-size:12px;font-weight:600;margin-bottom:4px">' + e.name + '</div>' +
+        '<div style="font-size:12px;font-weight:600;margin-bottom:4px">' + e.name + makerTag + '</div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--mo);color:var(--t2)">' +
         '<span>進貨 ' + e.incoming + 'g</span>';
       if (e.thawed !== null) {
